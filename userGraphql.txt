@@ -1,0 +1,82 @@
+Примеры запросов на http://localhost:3000/graphql/v2
+
+Список юзеров
+
+query {
+  postgres {
+    Users {
+       name
+      email
+      login
+      manager
+      blocked
+      data {
+        birthday
+      }
+    }
+  }
+}
+
+Менеджеры
+
+query {
+  postgres {
+    User(manager: true) {
+       name
+      email
+      login
+      manager
+      blocked
+      data {
+        birthday
+      }
+    }
+  }
+}
+
+Менеджеры
+
+query {
+  postgres {
+    User(manager: true) {
+       name
+      email
+      login
+      manager
+      blocked
+      data {
+        birthday
+      }
+    }
+  }
+}
+
+Поиск по имени и логину
+
+query {
+  postgres {
+    User(name: "Администратор системы", login: "admin") {
+ 			name
+      email
+      login
+      manager
+      blocked
+      data {
+        birthday
+      }
+    }
+  }
+}
+
+Аутентификация (Все пользователи в таблице для которых совпадет пароль и логин расцениваются залогиненными.
+  В коде есть пример реализации заполнения поля isAuthenticated и сравнения хэшей
+  см. /src/services/test/resolvers.js   :75
+)
+
+mutation {
+  postgres {
+    Auth(password: "4cc2321ca77b832bd20b66f86f85bef6", login: "user_2") {
+			isAuthenticated
+   }
+  }
+}

@@ -14,8 +14,9 @@ export default oncePerServices(function (services = missingArgument('services'))
     const resolvers = Object.create(null);
 
     await (new SchemaBuilder({
-      test: require('./services/test/graphql').default(services)
-      
+      test: require('./services/test/graphql').default(services),
+      postgres: require('./services/test/graphql').default(services)
+
     }).build({typeDefs, resolvers}));
 
     return makeExecutableSchema({
@@ -24,4 +25,3 @@ export default oncePerServices(function (services = missingArgument('services'))
     })
   }
 });
-

@@ -44,20 +44,22 @@ const realConsole = console;
 
     // ждем пока NodeManager скажет что он готов.  при этом часть сервисов может быть в состоянии failed
     await manager.started;
-    
+
     let expressApp = express();
 
     expressApp.use(cors());
-    
+
     let graphqlRouterV2 = express.Router();
     const graphqlSchemaV2 = await (require('./graphqlSchemaV2').default(manager.services)());
+
     graphqlRouterV2.post('/graphql/v2', bodyParser.json(), graphqlExpress(request => ({
       schema: graphqlSchemaV2,
       context: {request, user: request.user},
     })));
+
     graphqlRouterV2.get('/graphql/v2', graphiqlExpress({endpointURL: '/graphql/v2'}));
     expressApp.use('/', graphqlRouterV2);
-    
+
     // Запускаем сервер
     let httpServer = http.Server(expressApp);
     await new Promise(function (resolve, reject) {
@@ -66,7 +68,7 @@ const realConsole = console;
         else resolve(data);
       })
     });
-    
+
     bus.event({
         type: 'webserver.started',
         service: nodeName,
