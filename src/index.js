@@ -12,6 +12,7 @@ import {missingExport} from './common/services'
 import errorDataToEvent from './common/errors/errorDataToEvent'
 const schema = require('./index.schema');
 const realConsole = console;
+// const errorHandler = require('../api/_helpers/error-handler')
 
 (async function () {
 
@@ -38,17 +39,25 @@ const realConsole = console;
     manager = new (require('./common/services').NodeManager(consoleAndBusServicesOnly))({ // далее consoleAndBusServicesOnly нельзя.  нужно пользоваться manager.services
       name: nodeName,
       services: [
-        require('./services/postgres')
+        require('./services/postgres'),
+        require('./services/user')
       ]
     });
 
     // ждем пока NodeManager скажет что он готов.  при этом часть сервисов может быть в состоянии failed
     await manager.started;
-    
+
     let expressApp = express();
 
     expressApp.use(cors());
-    
+    // expressApp.use(bodyParser.urlencoded({extended: false}));
+    // expressApp.use(bodyParser.json());
+
+    expressApp.use('/', require('./api'));
+
+    expressApp.use(require('./api/_helpers/error-handler'));
+
+
     let graphqlRouterV2 = express.Router();
     const graphqlSchemaV2 = await (require('./graphqlSchemaV2').default(manager.services)());
     graphqlRouterV2.post('/graphql/v2', bodyParser.json(), graphqlExpress(request => ({
@@ -57,7 +66,8 @@ const realConsole = console;
     })));
     graphqlRouterV2.get('/graphql/v2', graphiqlExpress({endpointURL: '/graphql/v2'}));
     expressApp.use('/', graphqlRouterV2);
-    
+
+
     // Запускаем сервер
     let httpServer = http.Server(expressApp);
     await new Promise(function (resolve, reject) {
@@ -66,7 +76,7 @@ const realConsole = console;
         else resolve(data);
       })
     });
-    
+
     bus.event({
         type: 'webserver.started',
         service: nodeName,
